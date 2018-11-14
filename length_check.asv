@@ -1,0 +1,33 @@
+%麦穗长度检测
+clc;
+clear all;
+close all;
+
+%设置读取文件的路径
+SearchFolder = 'D:\image\';            % 文件路径，换成自己位置
+SearFlag = '*.jpg';            
+Buffer = dir([SearchFolder SearFlag]);    
+Number = length(Buffer);
+
+%创建输出文件
+fOut = fopen([SearchFolder 'check_result.txt'], 'w+');
+for n = 1:Number
+    PathName = [SearchFolder Buffer(n).name];
+    imgSrc = imread(PathName);
+    maxLength = DetectTargetLength(imgSrc)
+  fwrite(fOut, PathName);
+  fprintf(fOut, '   length = %f \r\n', maxLength);
+end
+fclose(fOut);
+
+
+
+
+
+
+
+  
+  
+  
+  
+  

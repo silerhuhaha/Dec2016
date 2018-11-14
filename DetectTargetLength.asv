@@ -1,0 +1,106 @@
+function [Length, target] = DetectTargetLength( ImageSrc )
+
+
+%颜色匹配
+[h w channels] = size(ImageSrc);
+ColorProbility = zeros(h, w);
+doubleSrc = double(ImageSrc);
+for r = 1:h
+    for c = 1: w
+        subR = 255.0 - doubleSrc(r, c, 1);
+        subG = 255.0 - doubleSrc(r, c, 2);
+        subB = 0.0 - doubleSrc(r, c, 3);
+        ColorProbility(r, c) = (subR * subR + subB * subB + subG * subG)^0.5;
+    end
+end
+
+%归一化
+pMax = max(max(ColorProbility));
+pMin = min(min(ColorProbility));
+step = 255.0 / (pMax - pMin);
+normal = uint8(zeros(h, w));
+for r = 1:h
+    for c = 1: w
+        normal(r, c) = 255 - (ColorProbility(r, c)  - pMin) * step;
+    end
+end
+ imgBW = im2bw(normal, 0.75);
+
+ %膨胀
+SE2 = strel('diamond', 7);
+imgBW=imdilate(imgBW,SE2,'same'); %dilate
+
+%最大连通域查找
+ imgLable = bwlabel(imgBW);
+ stats = regionprops(imgLable);
+Ar = cat(1, stats.Area);  
+ind = find(Ar ==max(Ar));%找到最大连通区域的标号  
+imgBW(find(imgLable~=ind))=0;%将其他区域置为0  
+
+%最小外接矩形计算
+[r, c] = find(imgBW == 1);
+[rectx,recty,area,perimeter] = minboundrect(c,r,'a'); % 'a'是按面积算的最小矩形，如果按边长用'p'。
+
+%%%%截取麦穗图像，以便下一步的麦穗颗粒计算
+target = stats
+
+%长度计算 像素级
+pixTargetLength = -1.0;%麦穗的长度
+Width = distance(rectx(1,1), rectx(2,1), recty(1, 1), recty(2, 1) );
+Height = distance(rectx(1,1), rectx(4,1), recty(1, 1), recty(4, 1) );
+if Width > Height
+    pixTargetLength = Width;
+else
+    pixTargetLength = Height;
+end
+
+%%%%%以下部分为标签长度求解
+%白色匹配
+for r = 1:h
+    for c = 1: w
+        subR = 255.0 - doubleSrc(r, c, 1);
+        subG = 255.0 - doubleSrc(r, c, 2);
+        subB = 255.0 - doubleSrc(r, c, 3);
+        ColorProbility(r, c) = (subR * subR + subB * subB + subG * subG)^0.5;
+    end
+end
+%归一化
+pMax = max(max(ColorProbility));
+pMin = min(min(ColorProbility));
+step = 255.0 / (pMax - pMin);
+normal = uint8(zeros(h, w));
+for r = 1:h
+    for c = 1: w
+        normal(r, c) = 255 - (ColorProbility(r, c)  - pMin) * step;
+    end
+end
+ imgBW = im2bw(normal, 0.8);
+ 
+  imgLable = bwlabel(imgBW);
+ stats = regionprops(imgLable);
+Ar = cat(1, stats.Area);  
+ind = find(Ar ==max(Ar));%找到最大连通区域的标号  
+imgBW(find(imgLable~=ind))=0;%将其他区域置为0 
+
+%最小外接矩形计算
+[r, c] = find(imgBW == 1);
+[Lrectx,Lrecty,area,perimeter] = minboundrect(c,r,'a'); % 'a'是按面积算的最小矩形，如果按边长用'p'。
+
+labeLength = -1.0;%标签的长度
+Width = distance(Lrectx(1,1), Lrectx(2,1), Lrecty(1, 1), Lrecty(2, 1) );
+Height = distance(Lrectx(1,1), Lrectx(4,1), Lrecty(1, 1), Lrecty(4, 1) );
+if Width > Height
+    labeLength = Width;
+else
+    labeLength = Height;
+end
+
+%%%%%麦穗实际长度计算%%%%%%%%%%%
+factor = 5.0 / labeLength;
+ Length = factor * pixTargetLength;
+
+ 
+ 
+
+end
+

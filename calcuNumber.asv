@@ -1,0 +1,93 @@
+function total = calcuNumber( targetROI )
+%计算麦穗颗粒
+
+%灰度化
+gray = rgb2gray(targetROI);
+%自动阈值
+level = graythresh(gray);
+BW = im2bw(gray,level);
+%开运算（形态学操作）
+SE = strel('diamond', 3);
+BW=imopen(BW,SE);
+%最大连通域查找
+ imgLable = bwlabel(BW);
+ stats = regionprops(imgLable);
+Ar = cat(1, stats.Area);  
+ind = find(Ar ==max(Ar));%找到最大连通区域的标号  
+BW(find(imgLable~=ind))=0;%将其他区域置为0  
+
+%旋转角计算
+[r, c] = find(BW == 1);
+[rectx,recty,area,perimeter] = minboundrect(c,r,'a'); % 'a'是按面积算的最小矩形，如果按边长用'p'。
+[r, c] = size(rectx);
+%寻找最长边
+first = 0;
+sec = 0;
+dMax = -1;
+for i = 1: r - 2
+    dis = distance(rectx(i,1), rectx(i + 1,1), recty(i, 1), recty(i + 1, 1) );
+    if dis > dMax
+        dMax = dis;
+        first = i;
+        sec = i + 1;
+    end
+end
+
+%旋转角计算
+dFX = rectx(first,1) - rectx(sec, 1);
+dFY = recty(first, 1) - recty(sec, 1);
+dSX =  - 1;
+dSY = 0;
+dInside = dFX * dSX + dFY * dSY;
+dModeF = (dFX * dFX  + dFY * dFY)^0.5;
+dModeS = (dSX * dSX  + dSY * dSY)^0.5;
+dAngle = acos(dInside / (dModeF * dModeS)) * 180 / pi;
+
+%将目标移到图中心
+boundingtRect = stats(ind). BoundingBox;
+left = int32(boundingtRect(1));
+top = int32(boundingtRect(2));
+right = left + int32(boundingtRect(3));
+bottom = top + int32(boundingtRect(4));
+[h w] = size(BW);
+if left <= 0
+    left = 1;
+end
+if top <= 0
+    top = 1;
+end
+if bottom > h
+    bottom = h;
+end
+if right > w
+    right = w;
+end 
+
+%将图像校正
+ target = BW(top:bottom, left:right,:);
+ target = imrotate(target, dAngle);
+
+ %投影
+ project = sum(target);
+ 
+%极值寻找
+nWin = 5;
+
+[h w] = size(project);
+
+for i = nWin : w - nWin
+    
+    if project(1, i) < 5
+        continue;
+    end
+    
+    isPeek = 1;
+    %left
+    for j = i - nWin + 1 : i - 1
+    end
+    %right
+    for j = i + 1: i + nWin - 
+end
+
+end
+

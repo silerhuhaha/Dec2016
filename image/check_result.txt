@@ -1,0 +1,9 @@
+image/IMG_0703.JPG   length = 6.035578cm  total = 23.000000
+image/IMG_0704.JPG   length = 6.178548cm  total = 10.000000
+image/IMG_0705.JPG   length = 6.267369cm  total = 16.000000
+image/IMG_0706.JPG   length = 6.523924cm  total = 17.000000
+image/IMG_0707.JPG   length = 6.980610cm  total = 6.000000
+image/IMG_0710.JPG   length = 10.745033cm  total = 16.000000
+image/IMG_0711.JPG   length = 10.390084cm  total = 24.000000
+image/IMG_0713.JPG   length = 22.309158cm  total = 20.000000
+image/IMG_0714.JPG   length = 11.418486cm  total = 23.000000
